@@ -1,71 +1,68 @@
 #include "polynom.h"
 
 
-Polynom* monom(pol_degree_t degree) {
-    if (degree < 0 || degree > MAX_POLYNOM_DEGREE) return NULL;
-    Polynom* p = (Polynom*) malloc(sizeof(Polynom));
-    if (p == NULL) return NULL;
+void monom(pol_degree_t degree, Polynomial_t* p) {
+    if (degree < 0 || degree > MAX_POLYNOM_DEGREE) p=NULL;
+    p = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    if (p == NULL) p=NULL;
     p->degree = degree;
     p->coefficients = (bool*) malloc((degree+1) * sizeof(bool));
     for (pol_degree_t i = 0; i <= degree; i++) {
         p->coefficients[i] = false;
     }
     p->coefficients[degree] = true;
-    return p;
 }
 
-Polynom* constant_polynom(bool value) {
-    Polynom* p = (Polynom*) malloc(sizeof(Polynom));
-    if (p == NULL) return NULL;
+void constant_polynom(bool value, Polynomial_t* p) {
+    p = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    if (p == NULL) p=NULL;
     p->degree = 0;
     p->coefficients = (bool*) malloc(sizeof(bool));
     p->coefficients[0] = value;
-    return p;
 }
 
-Polynom* random_polynom(pol_degree_t degree) {
-    if (degree < 0 || degree > MAX_POLYNOM_DEGREE) return NULL;
-    Polynom* p = (Polynom*) malloc(sizeof(Polynom));
-    if (p == NULL) return NULL;
+void random_polynom(pol_degree_t degree, Polynomial_t* p) {
+    if (degree < 0 || degree > MAX_POLYNOM_DEGREE) p=NULL;
+    p = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    if (p == NULL) p=NULL;
     p->degree = degree;
     p->coefficients = (bool*) malloc((degree+1) * sizeof(bool));
+    if (p->coefficients == NULL) { free(p); p=NULL; }
     for (pol_degree_t i = 0; i <= degree; i++) {
         p->coefficients[i] = rand() % 2;
     }
-    return p;
 }
 
-Polynom* copy_polynom(Polynom* p) {
-    if (p == NULL) return NULL;
-    Polynom* copy = (Polynom*) malloc(sizeof(Polynom));
-    if (copy == NULL) return NULL;
-    copy->degree = p->degree;
-    copy->coefficients = (bool*) malloc((p->degree+1) * sizeof(bool));
-    for (pol_degree_t i = 0; i <= p->degree; i++) {
-        copy->coefficients[i] = p->coefficients[i];
+void copy_polynom(Polynomial_t* src, Polynomial_t* dest) {
+    if (src == NULL) dest=NULL;
+    dest = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    if (dest == NULL) return;
+    dest->degree = src->degree;
+    dest->coefficients = (bool*) malloc((src->degree+1) * sizeof(bool));
+    for (pol_degree_t i = 0; i <= src->degree; i++) {
+        dest->coefficients[i] = src->coefficients[i];
     }
-    return copy;
 }
 
-void delete_polynom(Polynom* p) {
+void delete_polynom(Polynomial_t* p) {
     if (p == NULL) return;
     free(p->coefficients);
     free(p);
 }
 
-Polynom* add_polynoms(Polynom* p1, Polynom* p2) {
-    if (p1 == NULL || p2 == NULL || p1->degree != p2->degree) return NULL;
-    Polynom* sum = (Polynom*) malloc(sizeof(Polynom));
-    if (sum == NULL) return NULL;
-    sum->degree = MAX(p1->degree, p2->degree);
-    sum->coefficients = (bool*) malloc((p1->degree+1) * sizeof(bool));
-    if (sum->coefficients == NULL) { free(sum); return NULL; }
+void add_polynoms(Polynomial_t* p1, Polynomial_t* p2, Polynomial_t* p) {
+    if (p1 == NULL || p2 == NULL || p1->degree != p2->degree) p=NULL;
+    p = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    if (p == NULL) p=NULL;
+    p->degree = MAX(p1->degree, p2->degree);
+    p->coefficients = (bool*) malloc((p1->degree+1) * sizeof(bool));
+    if (p->coefficients == NULL) { free(p); p=NULL; }
 
     #if !SSE2_SUPPORTED
-    for (pol_degree_t i = 0; i <= sum->degree; i++) {
-        if (i > p1->degree) sum->coefficients[i] = p2->coefficients[i];
-        else if (i > p2->degree) sum->coefficients[i] = p1->coefficients[i];
-        else sum->coefficients[i] = p1->coefficients[i] ^ p2->coefficients[i];
+    for (pol_degree_t i = 0; i <= p->degree; i++) {
+        if (i > p1->degree) p->coefficients[i] = p2->coefficients[i];
+        else if (i > p2->degree) p->coefficients[i] = p1->coefficients[i];
+        else p->coefficients[i] = p1->coefficients[i] ^ p2->coefficients[i];
     }
 
     #else
@@ -73,29 +70,28 @@ Polynom* add_polynoms(Polynom* p1, Polynom* p2) {
     __m128i* coeffs2 = (__m128i*)p2->coefficients;
     __m128i* result_coeffs_mm = (__m128i*)result_coeffs;
     
-    for (pol_degree_t i = 0; i <= sum->degree / 128; ++i) {
+    for (pol_degree_t i = 0; i <= p->degree / 128; ++i) {
         result_coeffs_mm[i] = _mm_xor_si128(coeffs1[i], coeffs2[i]);
     }
 
-    result->coefficients = result_coeffs;
-    result->degree = result_degree;
+    p->coefficients = result_coeffs;
+    p->degree = result_degree;
 
     #endif
-    return sum;
 }
 
-Polynom* multiply_polynoms(Polynom* p1, Polynom* p2) {
-    if (p1 == NULL || p2 == NULL) return NULL;
-    Polynom* product = (Polynom*) malloc(sizeof(Polynom));
-    if (product == NULL) return NULL;
-    product->degree = p1->degree + p2->degree;
-    product->coefficients = (bool*) malloc((product->degree+1) * sizeof(bool));
-    if (product->coefficients == NULL) { free(product); return NULL; }
+void multiply_polynoms(Polynomial_t* p1, Polynomial_t* p2, Polynomial_t* p) {
+    if (p1 == NULL || p2 == NULL) p=NULL;
+    p = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    if (p == NULL) p=NULL;
+    p->degree = p1->degree + p2->degree;
+    p->coefficients = (bool*) malloc((p->degree+1) * sizeof(bool));
+    if (p->coefficients == NULL) { free(p); p=NULL; }
     
     #if !SSE2_SUPPORTED
     for (pol_degree_t i = 0; i <= p1->degree; i++) {
         for (pol_degree_t j = 0; j <= p2->degree; j++) {
-            product->coefficients[i+j] ^= p1->coefficients[i] & p2->coefficients[j];
+            p->coefficients[i+j] ^= p1->coefficients[i] & p2->coefficients[j];
         }
     }
 
@@ -107,26 +103,25 @@ Polynom* multiply_polynoms(Polynom* p1, Polynom* p2) {
         for (pol_degree_t j = 0; j <= p2->degree / 128; ++j) {
             __m128i coeff_product = _mm_and_si128(coeffs1[i], coeffs2[j]);
             for (int k = 0; k < 128; ++k) {
-                product->coefficients[i * 128 + j * 128 + k] ^= (coeff_product.m128i_i8[k / 8] >> (k % 8)) & 1;
+                p->coefficients[i * 128 + j * 128 + k] ^= (coeff_product.m128i_i8[k / 8] >> (k % 8)) & 1;
             }
         }
     }
     #endif
-    
-    return product;
 }
 
 
-Polynom* divide_polynoms(Polynom* p1, Polynom* p2) {
-    if (p1 == NULL || p2 == NULL || p2->degree > p1->degree) return NULL;
-    Polynom* quotient = (Polynom*) malloc(sizeof(Polynom));
-    if (quotient == NULL) return NULL;
-    quotient->degree = p1->degree - p2->degree;
-    quotient->coefficients = (bool*) malloc((quotient->degree+1) * sizeof(bool));
-    if (quotient->coefficients == NULL) {  free(quotient); return NULL; }
+void divide_polynoms(Polynomial_t* p1, Polynomial_t* p2, Polynomial_t* p) {
+    if (p1 == NULL || p2 == NULL || p2->degree > p1->degree) p=NULL;
+    p = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    if (p == NULL) p=NULL;
+    p->degree = p1->degree - p2->degree;
+    p->coefficients = (bool*) malloc((p->degree+1) * sizeof(bool));
+    if (p->coefficients == NULL) {  free(p); p=NULL; }
     
-    Polynom* remainder = copy_polynom(p1);
-    Polynom* temp = monom(0);
+    Polynomial_t *remainder, *temp;
+    copy_polynom(p1, remainder);
+    monom(0, temp);
     
     #if !AVX2_SUPPORTED
     while (remainder->degree >= p2->degree) {
@@ -134,13 +129,14 @@ Polynom* divide_polynoms(Polynom* p1, Polynom* p2) {
         temp->coefficients = (bool*) realloc(temp->coefficients, (temp->degree+1) * sizeof(bool));
         for (pol_degree_t i = 0; i <= temp->degree; i++) temp->coefficients[i] = false;
         temp->coefficients[temp->degree] = true;
-        Polynom* product = multiply_polynoms(p2, temp);
-        Polynom* sum = add_polynoms(quotient, temp);
-        delete_polynom(quotient);
-        quotient = sum;
-        sum = add_polynoms(remainder, product);
+        Polynomial_t *product, *sum;
+        multiply_polynoms(p2, temp, product);
+        add_polynoms(p, temp, sum);
+        delete_polynom(p);
+        p = sum;
+        // add_polynoms(remainder, product, sum);
         delete_polynom(remainder);
-        remainder = sum;
+        // remainder = sum;
         delete_polynom(product);
         delete_polynom(temp);
     }
@@ -158,10 +154,10 @@ Polynom* divide_polynoms(Polynom* p1, Polynom* p2) {
         for (pol_degree_t i = 0; i <= temp->degree / 128; ++i) product_coeffs[i] = _mm_and_si128(coeffs2[i], temp_coeffs[0]);
         __m128i* sum_coeffs = (__m128i*)malloc((temp->degree + 1) * sizeof(__m128i));
         for (pol_degree_t i = 0; i <= temp->degree / 128; ++i) sum_coeffs[i] = _mm_xor_si128(coeffs1[i], product_coeffs[i]);
-        quotient = add_polynoms(quotient, temp);
-        remainder->coefficients = (bool*)realloc(remainder->coefficients, (temp->degree + 1) * sizeof(bool));
-        memcpy(remainder->coefficients, sum_coeffs, (temp->degree + 1) * sizeof(bool));
-        remainder->degree = temp->degree;
+        p = add_polynoms(p, temp);
+        // remainder->coefficients = (bool*)realloc(remainder->coefficients, (temp->degree + 1) * sizeof(bool));
+        // memcpy(remainder->coefficients, sum_coeffs, (temp->degree + 1) * sizeof(bool));
+        // remainder->degree = temp->degree;
         free(product_coeffs);
         free(sum_coeffs);
     }
@@ -169,11 +165,9 @@ Polynom* divide_polynoms(Polynom* p1, Polynom* p2) {
     
     delete_polynom(remainder);
     delete_polynom(temp);
-    
-    return quotient;
 }
 
-bool evaluate_polynom(Polynom* p, bool x) {
+bool evaluate_polynom(Polynomial_t* p, bool x) {
     if (p == NULL) return false;
     bool result = p->coefficients[0];
     for (pol_degree_t i = 1; i <= p->degree; i++) {
@@ -181,15 +175,4 @@ bool evaluate_polynom(Polynom* p, bool x) {
         x = x & x;
     }
     return result;
-}
-
-void print_polynom(Polynom* p) {
-    if (p == NULL) return;
-    printf("Polynom of degree %d: ", p->degree);
-    for (pol_degree_t i = 0; i <= p->degree; i++) {
-        if (p->coefficients[i]) {
-            printf("x^%d + ", i);
-        }
-    }
-    printf("\b\b \n");
 }

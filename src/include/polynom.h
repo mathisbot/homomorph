@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <emmintrin.h>
 
@@ -21,17 +22,17 @@
 
 /**
  * @file polynom.h
- * @brief Polynom structure and functions to manipulate polynoms.
+ * @brief Polynomial_t structure and functions to manipulate polynoms.
  * 
- * This file contains the definition of the Polynom structure and functions to manipulate polynoms.
+ * This file contains the definition of the Polynomial_t structure and functions to manipulate polynoms.
  * Polynoms are made to used in Z/2Z[X], the ring of polynoms with coefficients in Z/2Z.
  * 
- * @see Polynom
+ * @see Polynomial_t
 */
 
 
 /**
- * @brief Polynom structure
+ * @brief Polynomial_t structure
  * 
  * This structure is used to represent a polynom. It contains a pointer to an array of booleans, which represents the coefficients of the polynom, and the degree of the polynom.
  * Degree is the number of coefficients minus one, NOT the highest degree of the polynom.
@@ -45,7 +46,7 @@
 typedef struct {
     bool* coefficients;
     pol_degree_t degree;
-} Polynom;
+} Polynomial_t;
 
 
 /**
@@ -53,26 +54,24 @@ typedef struct {
  * 
  * This function creates a new polynom with the given degree. The coefficients of the polynom are initialized to false, expect for one of degree degree.
  * 
- * @param degree Degree of the polynom.
+ * @param[in] degree Degree of the polynom.
+ * @param[out] p Pointer to the new polynom.
  * 
- * @return Polynom* Pointer to the new polynom.
- * 
- * @see Polynom
+ * @see Polynomial_t
 */
-Polynom* monom(pol_degree_t degree);
+void monom(pol_degree_t degree, Polynomial_t* p);
 
 /**
  * @brief Return a constant polynom
  * 
  * This function returns a constant polynom with the given value.
  * 
- * @param value Value of the constant polynom.
- * 
- * @return Polynom* Pointer to the constant polynom.
- * 
- * @see Polynom
+ * @param[in] value Value of the constant polynom.
+ * @param[out] p Pointer to the new polynom.
+ *  
+ * @see Polynomial_t
 */
-Polynom* constant_polynom(bool value);
+void constant_polynom(bool value, Polynomial_t* p);
 
 /**
  * @brief Create a random polynom
@@ -80,27 +79,25 @@ Polynom* constant_polynom(bool value);
  * This function creates a new polynom with the given degree. The coefficients of the polynom are initialized to random values.
  * This function assumes that the random function has been seeded.
  * 
- * @param degree Degree of the polynom.
+ * @param[in] degree Degree of the polynom.
+ * @param[out] p Pointer to the new polynom.
  * 
- * @return Polynom* Pointer to the new polynom.
- * 
- * @see Polynom
+ * @see Polynomial_t
  * @see rand
 */
-Polynom* random_polynom(pol_degree_t degree);
+void random_polynom(pol_degree_t degree, Polynomial_t* p);
 
 /**
  * @brief Create a copy of a polynom
  * 
  * This function creates a new polynom that is a copy of the given polynom.
  * 
- * @param p Pointer to the polynom to copy.
+ * @param[in] src Pointer to the polynom to copy.
+ * @param[out] dest Pointer to the new polynom.
  * 
- * @return Polynom* Pointer to the new polynom.
- * 
- * @see Polynom
+ * @see Polynomial_t
 */
-Polynom* copy_polynom(Polynom* p);
+void copy_polynom(Polynomial_t* src, Polynomial_t* dest);
 
 /**
  * @brief Delete a polynom
@@ -109,9 +106,9 @@ Polynom* copy_polynom(Polynom* p);
  * 
  * @param p Pointer to the polynom to delete.
  * 
- * @see Polynom
+ * @see Polynomial_t
 */
-void delete_polynom(Polynom* p);
+void delete_polynom(Polynomial_t* p);
 
 /**
  * @brief Add two polynoms
@@ -119,14 +116,13 @@ void delete_polynom(Polynom* p);
  * This function adds two polynoms and returns the result.
  * Will use SSE2 instructions if available.
  * 
- * @param p1 Pointer to the first polynom.
- * @param p2 Pointer to the second polynom.
+ * @param[in] p1 Pointer to the first polynom.
+ * @param[in] p2 Pointer to the second polynom.
+ * @param[out] p Pointer to the result polynom.
  * 
- * @return Polynom* Pointer to the result polynom.
- * 
- * @see Polynom
+ * @see Polynomial_t
 */
-Polynom* add_polynoms(Polynom* p1, Polynom* p2);
+void add_polynoms(Polynomial_t* p1, Polynomial_t* p2, Polynomial_t* p);
 
 /**
  * @brief Multiply two polynoms
@@ -136,12 +132,11 @@ Polynom* add_polynoms(Polynom* p1, Polynom* p2);
  * 
  * @param p1 Pointer to the first polynom.
  * @param p2 Pointer to the second polynom.
+ * @param[out] p Pointer to the result polynom.
  * 
- * @return Polynom* Pointer to the result polynom.
- * 
- * @see Polynom
+ * @see Polynomial_t
 */
-Polynom* multiply_polynoms(Polynom* p1, Polynom* p2);
+void multiply_polynoms(Polynomial_t* p1, Polynomial_t* p2, Polynomial_t* p);
 
 /**
  * @brief Divide two polynoms
@@ -151,12 +146,11 @@ Polynom* multiply_polynoms(Polynom* p1, Polynom* p2);
  * 
  * @param p1 Pointer to the first polynom.
  * @param p2 Pointer to the second polynom.
+ * @param[out] p Pointer to the result polynom.
  * 
- * @return Polynom* Pointer to the result polynom.
- * 
- * @see Polynom
+ * @see Polynomial_t
 */
-Polynom* divide_polynoms(Polynom* p1, Polynom* p2);
+void divide_polynoms(Polynomial_t* p1, Polynomial_t* p2, Polynomial_t* p);
 
 /**
  * @brief Evaluate a polynom
@@ -168,17 +162,6 @@ Polynom* divide_polynoms(Polynom* p1, Polynom* p2);
  * 
  * @return bool Result of the evaluation.
  * 
- * @see Polynom
+ * @see Polynomial_t
 */
-bool evaluate_polynom(Polynom* p, bool x);
-
-/**
- * @brief Print a polynom
- * 
- * This function prints a polynom to the standard output.
- * 
- * @param p Pointer to the polynom.
- * 
- * @see Polynom
-*/
-void print_polynom(Polynom* p);
+bool evaluate_polynom(Polynomial_t* p, bool x);
