@@ -10,11 +10,12 @@ static Polynomial_t gen_secret_key(pol_degree_t d) {
 static PubKey gen_public_key(Polynomial_t sk, pol_degree_t dp, pol_degree_t delta, uint64_t tau) {
     PubKey pk;
     pk.size = tau;
+    pk.elements = (Polynomial_t*) malloc(tau*sizeof(Polynomial_t));
+    if (pk.elements == NULL) exit(1);
     Polynomial_t p1;
     Polynomial_t p2;
-    pk.elements = (Polynomial_t*) malloc(sizeof(Polynomial_t));
+    Polynomial_t tmp_pol1, tmp_pol2;
     for (uint64_t i = 0; i < tau; i++) {
-        Polynomial_t tmp_pol1, tmp_pol2;
         // First term
         tmp_pol1 = random_polynom(dp);
         multiply_polynoms(sk, tmp_pol1, &p1);

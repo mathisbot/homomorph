@@ -3,18 +3,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h> // memcpy
 
 #include <emmintrin.h>
 
 #include "utils.h"
 
-#ifdef __AVX2__
-#define SSE2_SUPPORTED 1
-#define AVX2_VECTOR_SIZE 32  // 256 bits = 32 bytes
-#else
+// #ifdef __SSE2__
+// #define SSE2_SUPPORTED 1
+// #define SSE2_VECTOR_SIZE 16 // 128 bits = 16 bytes
+// #else
+// #define SSE2_SUPPORTED 0
+// #endif
 #define SSE2_SUPPORTED 0
-#endif
-
 
 #define pol_degree_t uint32_t
 #define MAX_POLYNOM_DEGREE 4294967295
@@ -131,7 +132,6 @@ void delete_polynom(Polynomial_t p);
 /**
  * @brief Add two polynoms
  * 
- * This function adds two polynoms and returns the result.
  * Will use SSE2 instructions if available.
  * 
  * @param[in] p1 First polynom.
@@ -141,6 +141,19 @@ void delete_polynom(Polynomial_t p);
  * @see Polynomial_t
 */
 void add_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p);
+
+/**
+ * @brief Substract two polynoms
+ * 
+ * Will use SSE2 instructions if available.
+ * 
+ * @param[in] p1 First polynom.
+ * @param[in] p2 Second polynom.
+ * @param[out] p Pointer to the result polynom.
+ * 
+ * @see Polynomial_t
+*/
+void substract_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p);
 
 /**
  * @brief Multiply two polynoms
@@ -159,7 +172,7 @@ void multiply_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p);
 /**
  * @brief Divide two polynoms
  * 
- * This function divides two polynoms and returns the result (euclidean division).
+ * This function divides two polynoms and returns the quotient (euclidean division).
  * Will use SSE2 instructions if available.
  * 
  * @param[in] p1 First polynom.

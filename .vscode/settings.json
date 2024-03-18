@@ -1,9 +1,5 @@
 {
     "files.associations": {
-        "polynom.h": "c",
-        "stdio.h": "c",
-        "homomorph.h": "c",
-        "time.h": "c",
-        "stdint.h": "c"
+        "homomorph.h": "c"
     }
 }
