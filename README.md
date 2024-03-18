@@ -18,6 +18,11 @@ This repository provide a simple API for homomorphic encryption.
 
 3. Compile with
     ```
-    gcc -o main.exe src/main.c src/homomorph.c src/include/*.c -Isrc/include -msse2
+    gcc -Ofast -Wall -o build/bit_encryption.exe test/bit_encryption.c src/include/homom/**.c src/include/pol/**.c -Isrc/include/homom -Isrc/include/pol
     ```
-    Make sure SSE2 are supported by your CPU. Otherwise don't user -msse2
+    If SSE2 are supported by your CPU, add -msse2.
+
+## Improvements
+
+Store polynomials as array of 64-bit numbers to improve computation time.
+This should divide computational time by 64.
