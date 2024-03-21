@@ -71,9 +71,6 @@ void decrypt_bit(Polynomial_t c, SecKey sk, bool* bit) {
 
 void encrypt(uint64_t n, PubKey pk, CipheredInt* c) {
     uint32_t num_bits = sizeof(n)*8;
-    c->size = num_bits;
-    c->elements = (Polynomial_t*) malloc(num_bits*sizeof(Polynomial_t));
-    if (c->elements == NULL) exit(1);
     Part part;
     for (uint32_t i = 0; i < num_bits; i++) {
         part = random_part(pk.size);
@@ -83,11 +80,42 @@ void encrypt(uint64_t n, PubKey pk, CipheredInt* c) {
 }
 
 void decrypt(CipheredInt* c, SecKey sk, uint64_t* n) {
-    if (c->size >= sizeof(uint64_t)*8) exit(1);
     *n = 0;
     bool bit;
-    for (uint32_t i = 0; i < c->size; i++) {
+    for (uint32_t i = 0; i < sizeof(uint64_t); i++) {
         decrypt_bit(c->elements[i], sk, &bit);
         *n |= (bit << i);
+    }
+}
+
+static void ciphered_or_bit(Polynomial_t a, Polynomial_t b, Polynomial_t* c) {
+    Polynomial_t sum = {0};
+    Polynomial_t prod = {0};
+    add_polynoms(a, b, &sum);
+    multiply_polynoms(a, b, &prod);
+    add_polynoms(sum, prod, c);
+    delete_polynom(sum);
+    delete_polynom(prod);
+}
+
+static void ciphered_add_bit(Polynomial_t a, Polynomial_t b, Polynomial_t cin, Polynomial_t* c, Polynomial_t* cout) {
+    Polynomial_t sum = {0};
+    Polynomial_t prod = {0};
+    Polynomial_t tcin = {0};
+    add_polynoms(a, b, &sum);
+    add_polynoms(sum, cin, c);
+    multiply_polynoms(a, b, &prod);
+    multiply_polynoms(sum, cin, &tcin);
+    ciphered_or_bit(prod, tcin, cout);
+    *c = sum;
+}
+
+void ciphered_add(CipheredInt a, CipheredInt b, CipheredInt* c) {
+    Polynomial_t cin = constant_polynom(0);
+    Polynomial_t sum = {0};
+    for (uint32_t i = sizeof(uint64_t)-1; i >= 0; i--) {
+        ciphered_add_bit(a.elements[i], b.elements[i], cin, &(c->elements[i]), &sum);
+        delete_polynom(cin);
+        cin = sum;
     }
 }

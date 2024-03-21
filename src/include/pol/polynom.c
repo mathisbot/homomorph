@@ -65,7 +65,6 @@ void delete_polynom(Polynomial_t p) {
 void add_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
     if (p == NULL) exit(1);
     p->size = MAX(p1.degree, p2.degree) + 1;
-    // delete_polynom(*p);  // Make sure we don't have any memory leaks
     p->coefficients = (bool*) malloc(p->size*sizeof(bool));
     if (p->coefficients == NULL) exit(1);
 
@@ -96,7 +95,7 @@ void multiply_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
     copy_polynom(p2, &p2c);
     p->degree = p1c.degree + p2c.degree;
     p->size = p->degree + 1;
-    // delete_polynom(*p);  // Make sure we don't have any memory leaks
+    // if (&p1 == p || &p2 == p) delete_polynom(*p);  // Make sure we don't have any memory leaks
     p->coefficients = (bool*) malloc(p->size * sizeof(bool));
     if (p->coefficients == NULL) exit(1);
     for (pol_degree_t i = 0; i < p->size; i++) p->coefficients[i] = false;
@@ -121,7 +120,7 @@ void divide_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
     copy_polynom(p2, &p2c);
     p->degree = p1c.degree - p2c.degree;
     p->size = p->degree + 1;
-    // delete_polynom(*p);  // Make sure we don't have any memory leaks
+    // if (&p1 == p || &p2 == p) delete_polynom(*p);  // Make sure we don't have any memory leaks
     p->coefficients = (bool*)malloc(p->size * sizeof(bool));
     if (p->coefficients == NULL) exit(EXIT_FAILURE);
     for (pol_degree_t i = 0; i <= p->degree; i++) p->coefficients[i] = false;
