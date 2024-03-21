@@ -69,32 +69,18 @@ void add_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
     p->coefficients = (bool*) malloc(p->size*sizeof(bool));
     if (p->coefficients == NULL) exit(1);
 
-    #if !SSE2_SUPPORTED
     for (pol_degree_t i = 0; i < p->size; i++) {
         if (i > p1.degree) p->coefficients[i] = p2.coefficients[i];
         else if (i > p2.degree) p->coefficients[i] = p1.coefficients[i];
         else p->coefficients[i] = p1.coefficients[i] ^ p2.coefficients[i];
     }
+
     if (p1.degree != p2.degree) p->degree = MAX(p1.degree, p2.degree);
     else {
         p->degree = degree_of_polynom(*p);
         p->size = p->degree + 1;
         p->coefficients = (bool*) realloc(p->coefficients, p->size*sizeof(bool));
     }
-
-    #else
-    __m128i* coeffs1 = (__m128i*)p1.coefficients;
-    __m128i* coeffs2 = (__m128i*)p2.coefficients;
-    __m128i* result_coeffs_mm = (__m128i*)result_coeffs;
-    
-    for (pol_degree_t i = 0; i <= p->degree / 128; ++i) {
-        result_coeffs_mm[i] = _mm_xor_si128(coeffs1[i], coeffs2[i]);
-    }
-
-    p->coefficients = result_coeffs;
-    p->degree = result_degree;
-
-    #endif
 }
 
 void substract_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
@@ -115,26 +101,11 @@ void multiply_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
     if (p->coefficients == NULL) exit(1);
     for (pol_degree_t i = 0; i < p->size; i++) p->coefficients[i] = false;
     
-    #if !SSE2_SUPPORTED
     for (pol_degree_t i = 0; i <= p1c.degree; i++) {
         for (pol_degree_t j = 0; j <= p2c.degree; j++) {
             p->coefficients[i+j] ^= p1c.coefficients[i] & p2c.coefficients[j];
         }
     }
-
-    #else
-    __m128i* coeffs1 = (__m128i*)p1.coefficients;
-    __m128i* coeffs2 = (__m128i*)p2.coefficients;
-    
-    for (pol_degree_t i = 0; i <= p1.degree / 128; ++i) {
-        for (pol_degree_t j = 0; j <= p2.degree / 128; ++j) {
-            __m128i coeff_product = _mm_and_si128(coeffs1[i], coeffs2[j]);
-            for (int k = 0; k < 128; ++k) {
-                p->coefficients[i * 128 + j * 128 + k] ^= (coeff_product.m128i_i8[k / 8] >> (k % 8)) & 1;
-            }
-        }
-    }
-    #endif
 
     delete_polynom(p1c);
     delete_polynom(p2c);
@@ -155,7 +126,6 @@ void divide_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
     if (p->coefficients == NULL) exit(EXIT_FAILURE);
     for (pol_degree_t i = 0; i <= p->degree; i++) p->coefficients[i] = false;
 
-    #if !SSE2_SUPPORTED
     Polynomial_t remainder = {0};
     copy_polynom(p1c, &remainder);
     while (remainder.degree >= p2c.degree) {
@@ -167,23 +137,8 @@ void divide_polynoms(Polynomial_t p1, Polynomial_t p2, Polynomial_t* p) {
         delete_polynom(monom_division);
         delete_polynom(monom_product);
     }
-    delete_polynom(remainder);
-    #else
-    __m128i* coeffs1 = (__m128i*)p1.coefficients;
-    __m128i* coeffs2 = (__m128i*)p2.coefficients;
-    __m128i* result_coeffs_mm = (__m128i*)result_coeffs;
-    for (pol_degree_t i = 0; i <= p1.degree / 128; ++i) {
-        for (pol_degree_t j = 0; j <= p2.degree / 128; ++j) {
-            __m128i coeff_product = _mm_and_si128(coeffs1[i], coeffs2[j]);
-            for (int k = 0; k < 128; ++k) {
-                p->coefficients[i * 128 + j * 128 + k] ^= (coeff_product.m128i_i8[k / 8] >> (k % 8)) & 1;
-            }
-        }
-    }
-    p->coefficients = result_coeffs;
-    p->degree = result_degree;
-    #endif
 
+    delete_polynom(remainder);
     delete_polynom(p1c);
     delete_polynom(p2c);
 }

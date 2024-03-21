@@ -8,15 +8,6 @@
 
 #include "utils.h"
 
-// // SSE2 support
-// #ifdef __SSE2__
-// #define SSE2_SUPPORTED 1
-// #define SSE2_VECTOR_SIZE 16 // 128 bits = 16 bytes
-// #else
-// #define SSE2_SUPPORTED 0
-// #endif
-#define SSE2_SUPPORTED 0  // TODO: remove
-
 #define pol_degree_t uint32_t
 #define MAX_POLYNOM_DEGREE 4294967295
 
