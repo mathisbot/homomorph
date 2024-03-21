@@ -7,9 +7,11 @@ typedef struct {
     uint64_t size;
 } PubKey;
 
+typedef Polynomial_t SecKey;
+
 typedef struct {
     PubKey pk;
-    Polynomial_t sk;
+    SecKey sk;
     pol_degree_t d;
     pol_degree_t dp;
     pol_degree_t delta;
@@ -23,7 +25,7 @@ typedef struct {
  * @param[in] dp The degree of the random element
  * @param[in] delta The degree of the random element
  * @param[in] tau The size of the public key
- * @param[out] ctx The context to store the public and secret keys
+ * @param[out] ctx Pointer to the context to store the public and secret keys
  */
 void homomorph_init(pol_degree_t d, pol_degree_t dp, pol_degree_t delta, uint64_t tau, HomomContext* ctx);
 
@@ -53,4 +55,4 @@ void encrypt_bit(bool bit, PubKey pk, Part part, Polynomial_t* c);
  * @param[in] sk The secret key
  * @param[out] bit The decrypted bit
  */
-void decrypt_bit(Polynomial_t c, Polynomial_t sk, bool* bit);
+void decrypt_bit(Polynomial_t c, SecKey sk, bool* bit);

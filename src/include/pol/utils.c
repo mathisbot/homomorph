@@ -6,6 +6,7 @@ Part random_part(uint64_t size) {
     part.elements = (bool*) malloc(size * sizeof(bool));
     if (part.elements == NULL) exit(1);
     for (uint64_t i = 0; i < size; i++) {
+        // Assume that the random function has been seeded
         part.elements[i] = rand() % 2;
     }
     return part;
