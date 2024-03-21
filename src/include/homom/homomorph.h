@@ -18,6 +18,11 @@ typedef struct {
     uint64_t tau;
 } HomomContext;
 
+typedef struct {
+    Polynomial_t* elements;
+    uint64_t size;
+} CipheredInt;
+
 /**
  * @brief Generates a public and a secret key for the homomorphic encryption scheme
  * 
@@ -56,3 +61,21 @@ void encrypt_bit(bool bit, PubKey pk, Part part, Polynomial_t* c);
  * @param[out] bit The decrypted bit
  */
 void decrypt_bit(Polynomial_t c, SecKey sk, bool* bit);
+
+/**
+ * @brief Encrypts an integer using the public key
+ * 
+ * @param[in] bit The bit to be encrypted
+ * @param[in] pk The public key
+ * @param[out] c The encrypted integer
+*/
+void encrypt(uint64_t n, PubKey pk, CipheredInt* c);
+
+/**
+ * @brief Decrypts an integer using the secret key
+ * 
+ * @param[in] c A pointer to the encrypted integer
+ * @param[in] sk The secret key
+ * @param[out] bit The decrypted integer
+ */
+void decrypt(CipheredInt* c, SecKey sk, uint64_t* n);

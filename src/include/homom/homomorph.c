@@ -68,3 +68,26 @@ void decrypt_bit(Polynomial_t c, SecKey sk, bool* bit) {
     *bit = p.coefficients[0];
     delete_polynom(p);
 }
+
+void encrypt(uint64_t n, PubKey pk, CipheredInt* c) {
+    uint32_t num_bits = sizeof(n)*8;
+    c->size = num_bits;
+    c->elements = (Polynomial_t*) malloc(num_bits*sizeof(Polynomial_t));
+    if (c->elements == NULL) exit(1);
+    Part part;
+    for (uint32_t i = 0; i < num_bits; i++) {
+        part = random_part(pk.size);
+        encrypt_bit((n >> i) & 1, pk, part, &(c->elements[i]));
+        delete_part(part);
+    }
+}
+
+void decrypt(CipheredInt* c, SecKey sk, uint64_t* n) {
+    if (c->size >= sizeof(uint64_t)*8) exit(1);
+    *n = 0;
+    bool bit;
+    for (uint32_t i = 0; i < c->size; i++) {
+        decrypt_bit(c->elements[i], sk, &bit);
+        *n |= (bit << i);
+    }
+}
