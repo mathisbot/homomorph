@@ -36,7 +36,9 @@ A secret key $S$ is a randomly generated polynomial of degree $d$ in $\mathbb{Z}
 
 A public key $T$ is $\tau$-list of polynomials in $\mathbb{Z}/2\mathbb{Z}_{d+d'}[X]$. These polynomials are generated as follows :
 
-- Generate two random polynomials : $Q_i \in \mathbb{Z}/2\mathbb{Z}_{d'}[X]$ and $R_i \in \mathbb{Z}/2\mathbb{Z}_{\delta}[X]$
+- Generate two random polynomials :
+    - $Q_i \in \mathbb{Z}/2\mathbb{Z}_{d'}[X]$
+    - $R_i \in \mathbb{Z}/2\mathbb{Z}_{\delta}[X]$
 - $T_i$ is the sum $SQ_i + XR_i$
 
 So that $T = (SQ_i + XR_i)_{1 \leq i \leq \tau}$
@@ -46,10 +48,10 @@ So that $T = (SQ_i + XR_i)_{1 \leq i \leq \tau}$
 #### Encryption
 Encryption of bit $x$ is done as follows :
 
-- Generate $\mathcal{U} \in \mathcal{P}([\![1,\tau]\!])$
+- Generate $\mathcal{U} \in \mathcal{P}([1..\tau])$
 - Encrypted polynomial is $C = (\sum_{i\in\mathcal{U}} T_i) + x$
 
-$\mathcal{U}$ is used in order to protect against bruteforce. Indeed, if the sum was made over $[\![1,\tau]\!]$, a malicious person could compute the cipher of $0$ and $1$ and easily compare them with the desired cipher. With $\mathcal{U}$ in the way, the number of possibilities is now $2^\tau$.
+$\mathcal{U}$ is used in order to protect against bruteforce. Indeed, if the sum was made over $[1..\tau]$, a malicious person could compute the cipher of $0$ and $1$ and easily compare them with the desired cipher. With $\mathcal{U}$ in the way, the number of possibilities is now $2^\tau$.
 
 #### Decryption
 Decryption of a cipher $C$ is done as follows :
